@@ -7,5 +7,12 @@ data which should never be served if it's past its expiration date.
 To use fridge, copy the 'fridge' folder to somewhere Python can find it.
 Then type 'import fridge' at the top of your code.
 
-Right now, the module only contains one class: minifridge.
-See minifridge.ipynb for a demo.
+Right now, the module only contains two classes:
+
+# minifridge
+is a dict-like class with optional self-destruct timers.
+See /examples/minifridge.ipynb for examples.
+
+# cache_output
+is a decorator which caches outputs of function calls.
+See /examples/cache_output.ipynb for examples.
