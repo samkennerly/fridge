@@ -3,7 +3,12 @@ fridge consists of container objects whose values can self-destruct
 after a certain period of time. Like a cache, it's designed to store
 data which should never be served if it's past its expiration date.
 
-Right now, the module only contains one class: minifridge.
+Right now, the module only contains two classes:
+
+minifridge is a dict-like class with optional self-destruct timers.
+
+cache_output is a decorator which caches outputs of function calls.
+
 '''
 
 import datetime as dt
@@ -14,10 +19,10 @@ class minifridge(object):
     
     '''
     A minifridge is like a dictionary, but with 2 extra rules:
-
+    
     1. If another thread is using the fridge, then wait your turn.
     2. If you see something past its expiration date, then throw it out.
-
+    
     Some minifridge methods allow users to set a countdown timer.
     These timers are set using keyword arguments for datetime.timedelta:
     weeks, days, hours, minutes, seconds, microseconds, milliseconds
@@ -37,16 +42,16 @@ class minifridge(object):
     mf.keys()                       # Delete any bad items. Return the good keys.
     mf.purge()                      # Delete any expired (key,value) pairs
     mf.clear()                      # Delete everything 
-
+    
     minifridge was inspired by (but is not a fork of) ExpiringDict.
     Unlike ExipringDict, minifridge does not use re-entrant locks.
     https://github.com/mailgun/expiringdict
-
+    
     Caution: There are no built-in limits to size or number of elements.
     Caution: Not all dictionary methods have been implemented yet.
     Caution: Not well-tested yet, especially with multi-threading.
-    '''
-    
+    ''' 
+
     @staticmethod
     def is_past(t):
         # Convenience function for figuring out if something has expired
@@ -201,6 +206,71 @@ class minifridge(object):
         with self.lock:
             self._contents.clear()
     
+
+
+class cache_output(object):
+    
+    '''
+    Class-based decorator used to avoid re-calculating a function.
+    The first time the function is called, it initializes a minifridge.
+    Each time the function is called, input arguments are hashed.
+    The resulting hash is used as a minifridge key, and the outputs of
+    calling the function are stored for a limited time.
+    
+    Set timer using keyword arguments for datetime.timedelta:
+    weeks, days, hours, minutes, seconds, microseconds, milliseconds
+    
+    Example:
+    
+    @cache_output(hours=1)
+    def cached_power_tower(x,N):
+        for n in range(N):
+            x *= x
+        return x
+    
+    This function can be extremely slow for N > 30.
+    If it's called again with the same arguments within 1 hour,
+    then it will just get the previous answer from a minifridge.
+    
+    cache_output is almost identical to Scott Lobdell's Memoized decorator:
+    http://scottlobdell.me/2015/04/decorators-arguments-python/
+    except that it uses a minifridge instead of a deque for storage.
+    
+    WARNING: @cache_output stores *outputs* of a function.
+    It does not replicate *side effects* of a function!
+
+    Caution: Not well-tested yet, especially with multi-threading.
+    '''
+
+    @staticmethod
+    def _convert_args_to_hash(args,kwargs):
+        # Convert arguments to a string and hash it
+        return hash(str(args)+str(kwargs))
+    
+    def __init__(self,**kwargs):
+        # Create a minifridge with timer set by timedelta arguments
+        self.mf = minifridge(**kwargs)
+    
+    def __call__(self,func,*args,**kwargs):
+        
+        def wrapper(*args,**kwargs):
+            # Convert inputs to key. Is this key in minifridge?
+            # If so, just look up the answer. If not, call the
+            # function and store the result in minifridge.
+            
+            key = self._convert_args_to_hash(args,kwargs)            
+            if key in self.mf:
+                result = self.mf[key]
+            else:
+                result = func(*args,**kwargs)
+                self.mf[key] = result
+            
+            return result
+        
+        return wrapper
+    
+
+
 
 
 ''' BSD 3-clause license
