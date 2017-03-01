@@ -1,0 +1,10 @@
+# Mac OS generates some files we don't need
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# Don't clutter GitHub with notebook checkpoints or Python caches
+.ipynb_checkpoints/
+__pycache__
