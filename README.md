@@ -1,4 +1,4 @@
-# fridge
+# fridge [Python 3]
 
 fridge objects are key-value stores which automatically delete data which is past its expiration date.
 
