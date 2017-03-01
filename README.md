@@ -1,18 +1,15 @@
 # fridge
 
-fridge consists of container objects whose values can self-destruct
-after a certain period of time. fridge objects are designed to store
-data which should never be served if it's past its expiration date.
+fridge objects are key-value stores which automatically delete data which is past its expiration date.
 
-To use fridge, copy the 'fridge' folder to somewhere Python can find it.
-Then type 'import fridge' at the top of your code.
+## MiniFridge
+**dictionary with optional self-destruct timers**  
+See the [minifridge](https://github.com/samkennerly/fridge/blob/master/minifridge.ipynb) demo notebook for examples.
 
-Right now, the module only contains two classes:
+`MiniFridge` is similar to [ExpiringDict](https://github.com/mailgun/expiringdict) but does not use re-entrant locks.
 
-# minifridge
-is a dict-like class with optional self-destruct timers.
-See /examples/minifridge.ipynb for examples.
+## CacheOutput
+**class-based function decorator which caches outputs of function calls**  
+See the [cache_output](https://github.com/samkennerly/fridge/blob/master/cache_output.ipynb) demo notebook for examples.
 
-# cache_output
-is a decorator which caches outputs of function calls.
-See /examples/cache_output.ipynb for examples.
+`CacheOutput` is similar to Scott Lobdell's [Memoized decorator](http://scottlobdell.me/2015/04/decorators-arguments-python/), except it uses a `MiniFridge` instead of a `deque` for storage.
