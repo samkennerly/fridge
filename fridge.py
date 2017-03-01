@@ -15,13 +15,13 @@ class MiniFridge(object):
     1. If another thread is using the fridge, then wait your turn.
     2. If you see something past its expiration date, then throw it out.
     
-    Some minifridge methods allow users to set a countdown timer.
+    Some MiniFridge methods allow users to set a countdown timer.
     These timers are set using keyword arguments for datetime.timedelta:
     weeks, days, hours, minutes, seconds, microseconds, milliseconds
     
     Examples:
     
-    mf = minifridge(minutes=1)      # Make a fridge with 1-minute timer
+    mf = MiniFridge(minutes=1)      # Make a MiniFridge with 1-minute timer
     
     mf.put('spam',42,expire=False)  # Put spam in mf. It never expires
     mf.put('eggs',2,seconds=2)      # Put eggs in mf. It expires in 2 seconds.
@@ -34,11 +34,7 @@ class MiniFridge(object):
     mf.keys()                       # Delete any bad items. Return the good keys.
     mf.purge()                      # Delete any expired (key,value) pairs
     mf.clear()                      # Delete everything 
-    
-    minifridge was inspired by (but is not a fork of) ExpiringDict.
-    Unlike ExipringDict, minifridge does not use re-entrant locks.
-    https://github.com/mailgun/expiringdict
-    
+        
     Caution: There are no built-in limits to size or number of elements.
     Caution: Not all dictionary methods have been implemented yet.
     Caution: Not well-tested yet, especially with multi-threading.
@@ -65,7 +61,7 @@ class MiniFridge(object):
             self.default_timer = None
     
     def __setitem__(self,key,value):
-        ''' Put a (key,value) pair in the minifridge dictionary-style '''
+        ''' Put a (key,value) pair in the MiniFridge dictionary-style '''
 
         with self.lock:
             birth = dt.datetime.today()
@@ -74,7 +70,7 @@ class MiniFridge(object):
     
     def __getitem__(self,key):
         '''
-        Get a value from the minifridge dictionary-style.
+        Get a value from the MiniFridge dictionary-style.
         If key is not found, this will throw a KeyError.
         If key is found but expired, this with throw a KeyError.
         '''
@@ -95,7 +91,7 @@ class MiniFridge(object):
     
     def __contains__(self,key):
         '''
-        Magic function for answering "x in minifridge" questions.
+        Magic function for answering "x in MiniFridge" questions.
         If key is not found, then return False.
         If key is found but has expired, then throw it out! Return False.
         If key is found and has not expired, then return True.
@@ -120,7 +116,7 @@ class MiniFridge(object):
     
     def put(self,key,value,expire=True,**kwargs):
         '''
-        Put a (key,value) pair in the minifridge with optional timer.
+        Put a (key,value) pair in the MiniFridge with optional timer.
         By default, it will expire after default_timer elapses.
         To choose a different lifetime, use timedelta kwargs.
         To set lifetime to infinity, use expire=False.
@@ -232,9 +228,9 @@ class CacheOutput(object):
     
     '''
     Class-based decorator used to avoid re-calculating a function.
-    The first time the function is called, it initializes a minifridge.
+    The first time the function is called, it initializes a MiniFridge.
     Each time the function is called, input arguments are hashed.
-    The resulting hash is used as a minifridge key, and the outputs of
+    The resulting hash is used as a MiniFridge key, and the outputs of
     calling the function are stored for a limited time.
     
     Set timer using keyword arguments for datetime.timedelta:
@@ -242,17 +238,13 @@ class CacheOutput(object):
     
     Example:
     
-    @cache_output(hours=1)
+    @CacheOutput(hours=1)
     def cached_power_tower(x,N):
         for n in range(N):
             x *= x
         return x
-
-    cache_output is almost identical to Scott Lobdell's Memoized decorator:
-    http://scottlobdell.me/2015/04/decorators-arguments-python/
-    except that it uses a minifridge instead of a deque for storage.
     
-    WARNING: @cache_output stores *outputs* of a function.
+    WARNING: @CacheOutput stores *outputs* of a function.
     It does not replicate *side effects* of a function!
 
     Caution: Not well-tested yet, especially with multi-threading.
@@ -264,7 +256,7 @@ class CacheOutput(object):
         return hash(str(args)+str(kwargs))
     
     def __init__(self,**kwargs):
-        ''' Create a minifridge with timer set by timedelta arguments '''
+        ''' Create a MiniFridge with timer set by timedelta arguments '''
 
         self.fridge = MiniFridge(**kwargs)
     
@@ -272,9 +264,9 @@ class CacheOutput(object):
         
         def wrapper(*args,**kwargs):
             '''
-            Convert inputs to key. Is this key in minifridge?
+            Convert inputs to key. Is this key in MiniFridge?
             If so, just look up the answer. If not, call the
-            function and store the result in minifridge.
+            function and store the result in MiniFridge.
             '''
             
             key = self._convert_args_to_hash(args,kwargs)            
