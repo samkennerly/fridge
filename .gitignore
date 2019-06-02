@@ -1,10 +1,16 @@
-# Mac OS generates some files we don't need
-.DS_Store
-.DS_Store?
-.Spotlight-V100
+# Apple
+.DS_Store*
+.Spotlight-*
 .Trashes
+.fseventsd
 Thumbs.db
 
-# Don't clutter GitHub with notebook checkpoints or Python caches
+# Python
+*.py[cod]
+*.egg
+*.egg-info
+__pycache__/
+.pytest_cache/
 .ipynb_checkpoints/
-__pycache__
+.venv
+jupyter_notebook_config.*
